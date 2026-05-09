@@ -40,7 +40,8 @@ def get_token_count(current_spec: str) -> int:
     messages=[{
       "role": "user",
       "content": current_spec
-    }]
+    }],
+    model=MODEL_NAME
   )
   
   return token_count.input_tokens
@@ -102,6 +103,11 @@ def main():
         current_spec = new_spec
         
         print(f"\n--- Iteration {i} Finished with stop reason: {stop_reason} ---")
+        
+        if stop_reason != "end_turn":
+            print("Stop Reason is not end_turn - End Experiment")
+            break
+        
         time.sleep(1.5)  # Rate limit safety
     
     # Save metrics

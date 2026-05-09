@@ -1,30 +1,21 @@
-import os
 import time
 import pandas as pd
-import tiktoken
 import matplotlib.pyplot as plt
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from anthropic import Anthropic
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# Config
-MODEL_NAME = "claude-opus-4-7"
-ITERATIONS = 12
-TEMPERATURE = 0.7
-MAX_TOKENS = 4000
-
-INITIAL_SPEC = "review_agent.md"
-FEEDBACK_PROMPT = "prompts/refine_prompt.txt"
-RAW_DIR = "data/raw"
-METRICS_FILE = "data/metrics.csv"
-PLOTS_DIR = "data/plots"
-
-os.makedirs(RAW_DIR, exist_ok=True)
-os.makedirs(PLOTS_DIR, exist_ok=True)
+from config import (
+  MODEL_NAME,
+  MAX_TOKENS,
+  ITERATIONS,
+  INITIAL_SPEC,
+  FEEDBACK_PROMPT,
+  RAW_DIR,
+  PLOTS_DIR,
+  METRICS_FILE,
+  ensure_dirs
+)
 
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 client = Anthropic()
@@ -51,7 +42,7 @@ def get_token_count(current_spec: str) -> int:
     }]
   )
   
-  return token_count
+  return token_count.input_tokens
   
 
 def self_refine_iteration(current_spec: str, feedback_prompt: str) -> str:
@@ -74,6 +65,8 @@ def self_refine_iteration(current_spec: str, feedback_prompt: str) -> str:
 def main():
     print("🚀 Starting Self-Refining Review Agent Experiment (Claude as full agent)\n")
     
+    ensure_dirs()
+    
     feedback_prompt = load_feedback_prompt()
     
     current_spec = load_current_spec()
@@ -91,7 +84,7 @@ def main():
         new_spec, output_tokens, stop_reason = self_refine_iteration(current_spec, feedback_prompt)
         
         # Save the new version
-        save_version(i , new_spec)
+        save_version(i , new_spec, output_tokens)
         
         # Metrics
         embedding = embedder.encode([new_spec])[0]
@@ -99,7 +92,7 @@ def main():
         similarity = cosine_similarity([embedding], [prev_embedding])[0][0]
         
         records.append({
-            "iteration": i + 1,
+            "iteration": i,
             "tokens": output_tokens,
             "similarity_to_prev": round(similarity, 4),
             "timestamp": datetime.now()

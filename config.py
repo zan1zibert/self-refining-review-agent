@@ -1,25 +1,27 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Model configuration
-MODEL_PROVIDER = "anthropic"  # "openai" or "anthropic"
-MODEL_NAME = "claude-3-5-sonnet-20240620"  # or "gpt-4o", etc.
+MODEL_NAME = "claude-opus-4-7"  # or "gpt-4o", etc.
 
 # Experiment settings
-DEFAULT_ITERATIONS = 12
-DEFAULT_TEMPERATURE = 0.7
-DEFAULT_TOP_P = 0.95
-DEFAULT_MAX_TOKENS = 4000
+ITERATIONS = 12
+MAX_TOKENS = 4000
+TOP_P = 0.95
 
 # Paths
-INITIAL_SPEC = "review_agent.md"
-DATA_DIR = "data"
-RAW_DIR = f"{DATA_DIR}/raw"
-PLOTS_DIR = f"{DATA_DIR}/plots"
-METRICS_FILE = f"{DATA_DIR}/metrics.csv"
+ROOT = Path(__file__).parent
+INITIAL_SPEC = ROOT / "review_agent.md"
+FEEDBACK_PROMPT = ROOT / "prompts/refine_prompt.txt"
+DATA_DIR = ROOT / "data"
+RAW_DIR = DATA_DIR / "raw"
+PLOTS_DIR = DATA_DIR / "plots"
+METRICS_FILE = DATA_DIR / "metrics.csv"
 
 # Create directories
-os.makedirs(RAW_DIR, exist_ok=True)
-os.makedirs(PLOTS_DIR, exist_ok=True)
+def ensure_dirs() -> None:
+  os.makedirs(RAW_DIR, exist_ok=True)
+  os.makedirs(PLOTS_DIR, exist_ok=True)

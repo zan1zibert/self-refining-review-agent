@@ -6,7 +6,7 @@ This repo contains the full experiment: initial spec, orchestration script, raw 
 
 ## Key Findings (Coming in the Substack post)
 - [Token evolution chart]
-- Clear oscillation / convergence / divergence depending on temperature
+- Clear oscillation / convergence / divergence
 - Final evolved review spec (steal this!)
 
 ## Repository Structure
@@ -23,5 +23,5 @@ git clone https://github.com/YOURUSERNAME/self-refining-review-agent.git
 cd self-refining-review-agent
 pip install -r requirements.txt
 cp .env.example .env          # add your API keys
-python run_experiment.py --iterations 12 --temperature 0.7
+python run_experiment.py --iterations 12
 

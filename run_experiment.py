@@ -2,9 +2,10 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+# from sentence_transformers import SentenceTransformer
+# from sklearn.metrics.pairwise import cosine_similarity
 from anthropic import Anthropic
+from typing import Tuple
 from config import (
   MODEL_NAME,
   MAX_TOKENS,
@@ -17,7 +18,7 @@ from config import (
   ensure_dirs
 )
 
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
+# embedder = SentenceTransformer('all-MiniLM-L6-v2')
 client = Anthropic()
 
 def load_current_spec() -> str:
@@ -45,7 +46,7 @@ def get_token_count(current_spec: str) -> int:
   return token_count.input_tokens
   
 
-def self_refine_iteration(current_spec: str, feedback_prompt: str) -> str:
+def self_refine_iteration(current_spec: str, feedback_prompt: str) -> Tuple[str, int, str]:
     # The entire review_agent.md becomes the SYSTEM PROMPT
     system_prompt = current_spec
 
@@ -87,14 +88,14 @@ def main():
         save_version(i , new_spec, output_tokens)
         
         # Metrics
-        embedding = embedder.encode([new_spec])[0]
-        prev_embedding = embedder.encode([current_spec])[0]
-        similarity = cosine_similarity([embedding], [prev_embedding])[0][0]
+        # embedding = embedder.encode([new_spec])[0]
+        # prev_embedding = embedder.encode([current_spec])[0]
+        # similarity = cosine_similarity([embedding], [prev_embedding])[0][0]
         
         records.append({
             "iteration": i,
             "tokens": output_tokens,
-            "similarity_to_prev": round(similarity, 4),
+            # "similarity_to_prev": round(similarity, 4),
             "timestamp": datetime.now()
         })
         

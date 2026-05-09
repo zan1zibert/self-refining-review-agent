@@ -1,0 +1,5 @@
+You are improving your own Code Review Agent specification.
+
+Task: Produce an improved version of the entire specification file. Always strive to be concise and succinct.
+
+Output ONLY the new full Markdown specification. Do not add extra commentary.

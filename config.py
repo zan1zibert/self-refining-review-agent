@@ -8,13 +8,13 @@ load_dotenv()
 MODEL_NAME = "claude-sonnet-4-6"
 
 # Experiment settings
-ITERATIONS = 12
+ITERATIONS = 50
 MAX_TOKENS = 12000
 
 # Paths
 ROOT = Path(__file__).parent
 INITIAL_SPEC = ROOT / "review_agent.md"
-FEEDBACK_PROMPT = ROOT / "prompts/refine_prompt.txt"
+FEEDBACK_PROMPT = ROOT / "prompts/be_concise_prompt.txt"
 DATA_DIR = ROOT / "data"
 RUNS_DIR = DATA_DIR / "runs"
 

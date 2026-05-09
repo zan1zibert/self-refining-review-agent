@@ -11,8 +11,8 @@ import anthropic
 import matplotlib.pyplot as plt
 import pandas as pd
 from anthropic import Anthropic
-# from sentence_transformers import SentenceTransformer
-# from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from config import (
     FEEDBACK_PROMPT,
@@ -20,11 +20,20 @@ from config import (
     ITERATIONS,
     MAX_TOKENS,
     MODEL_NAME,
+    EMBEDDER_NAME,
     new_run_dir,
 )
 
-# embedder = SentenceTransformer('all-MiniLM-L6-v2')
+embedder = SentenceTransformer(EMBEDDER_NAME)
 client = Anthropic()
+
+
+def embed(text: str):
+    return embedder.encode([text])[0]
+
+
+def cos_sim(a, b) -> float:
+    return float(cosine_similarity([a], [b])[0][0])
 
 
 def sha256_of(path: Path) -> str:
@@ -82,6 +91,7 @@ def write_metadata(run_dir: Path, started_at: str, finished_at: str, status: str
         "feedback_prompt_path": str(FEEDBACK_PROMPT.relative_to(FEEDBACK_PROMPT.parent.parent)),
         "feedback_prompt_sha256": sha256_of(FEEDBACK_PROMPT),
         "anthropic_sdk_version": anthropic.__version__,
+        "embedder": EMBEDDER_NAME,
         "git": git_info(),
         "started_at": started_at,
         "finished_at": finished_at,
@@ -108,7 +118,17 @@ def main() -> None:
     initial_token_count = get_token_count(current_spec)
     save_version(raw_dir, 0, current_spec, initial_token_count)
 
-    fieldnames = ["iteration", "tokens", "stop_reason", "timestamp"]
+    initial_embedding = embed(current_spec)
+    prev_embedding = initial_embedding
+
+    fieldnames = [
+        "iteration",
+        "tokens",
+        "similarity_to_prev",
+        "similarity_to_initial",
+        "stop_reason",
+        "timestamp",
+    ]
     with metrics_file.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -123,20 +143,22 @@ def main() -> None:
                 )
                 save_version(raw_dir, i, new_spec, output_tokens)
 
-                # Metrics
-                # embedding = embedder.encode([new_spec])[0]
-                # prev_embedding = embedder.encode([current_spec])[0]
-                # similarity = cosine_similarity([embedding], [prev_embedding])[0][0]
+                new_embedding = embed(new_spec)
+                similarity_to_prev = cos_sim(new_embedding, prev_embedding)
+                similarity_to_initial = cos_sim(new_embedding, initial_embedding)
 
                 writer.writerow({
                     "iteration": i,
                     "tokens": output_tokens,
+                    "similarity_to_prev": round(similarity_to_prev, 6),
+                    "similarity_to_initial": round(similarity_to_initial, 6),
                     "stop_reason": stop_reason,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 })
                 f.flush()
 
                 current_spec = new_spec
+                prev_embedding = new_embedding
                 print(f"--- Iteration {i} stop_reason={stop_reason} ---")
 
                 if stop_reason != "end_turn":
@@ -162,9 +184,24 @@ def main() -> None:
         plt.xlabel("Iteration")
         plt.ylabel("Output tokens")
         plt.grid(True)
-        plot_path = plots_dir / "token_evolution.png"
-        plt.savefig(plot_path, dpi=200)
-        print(f"📊 Plot → {plot_path}")
+        token_plot = plots_dir / "token_evolution.png"
+        plt.savefig(token_plot, dpi=200)
+        plt.close()
+        print(f"📊 Plot → {token_plot}")
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(df["iteration"], df["similarity_to_prev"], marker="o", label="vs previous")
+        plt.plot(df["iteration"], df["similarity_to_initial"], marker="s", label="vs initial")
+        plt.title("Embedding Similarity – Self-Refining Review Agent")
+        plt.xlabel("Iteration")
+        plt.ylabel("Cosine similarity")
+        plt.ylim(0, 1.05)
+        plt.legend()
+        plt.grid(True)
+        sim_plot = plots_dir / "similarity.png"
+        plt.savefig(sim_plot, dpi=200)
+        plt.close()
+        print(f"📊 Plot → {sim_plot}")
 
 
 if __name__ == "__main__":

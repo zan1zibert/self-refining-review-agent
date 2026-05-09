@@ -6,6 +6,7 @@ load_dotenv()
 
 # Model configuration
 MODEL_NAME = "claude-sonnet-4-6"
+EMBEDDER_NAME = "Alibaba-NLP/gte-modernbert-base"
 
 # Experiment settings
 ITERATIONS = 50

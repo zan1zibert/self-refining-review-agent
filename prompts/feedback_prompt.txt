@@ -1,3 +1,0 @@
-You are reviewing your own Code Review Agent specification file.
-
-Give concrete, actionable suggestions for improvement. Be critical but constructive.

@@ -1,0 +1,7 @@
+anthropic>=0.30.0
+tiktoken
+sentence-transformers
+pandas
+matplotlib
+seaborn
+python-dotenv

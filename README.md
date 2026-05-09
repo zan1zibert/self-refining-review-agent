@@ -1,6 +1,27 @@
-# self-refining-review-agent
-A code review agent that iteratively rewrites its own .md instruction file using Self-Refine loops. Includes token oscillation graphs, parameter sweeps, and the final evolved spec.
+# Self-Refining Code Review Agent
 
-What happens when code review agent reviews its own system prompt and then iterates over and over again. Does it stop at some point and says this prompt can not be improved further? Does it just constantly add new instructions or does it maybe oscillate between more and less instructions. This is the purpose of this experiment and also will multiple runs of this experiment converge to the same "perfect" prompt or not.
+**I let a code review agent iteratively rewrite its own `.md` instruction file using Self-Refine loops. Here's what happened to token count, structure, and quality.**
 
+This repo contains the full experiment: initial spec, orchestration script, raw versions, metrics, and plots.
+
+## Key Findings (Coming in the Substack post)
+- [Token evolution chart]
+- Clear oscillation / convergence / divergence depending on temperature
+- Final evolved review spec (steal this!)
+
+## Repository Structure
+- `review_agent.md` → Initial version
+- `evolved_review_agent.md` → Best final version
+- `run_experiment.py` → Main orchestrator
+- `data/raw/` → All intermediate versions
+- `data/plots/` → Generated charts
+
+## Quick Start
+
+```bash
+git clone https://github.com/YOURUSERNAME/self-refining-review-agent.git
+cd self-refining-review-agent
+pip install -r requirements.txt
+cp .env.example .env          # add your API keys
+python run_experiment.py --iterations 12 --temperature 0.7
 

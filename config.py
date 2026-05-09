@@ -1,27 +1,38 @@
-import os
 from pathlib import Path
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Model configuration
-MODEL_NAME = "claude-opus-4-7"  # or "gpt-4o", etc.
+MODEL_NAME = "claude-sonnet-4-6"
 
 # Experiment settings
 ITERATIONS = 12
-MAX_TOKENS = 4000
-TOP_P = 0.95
+MAX_TOKENS = 12000
 
 # Paths
 ROOT = Path(__file__).parent
 INITIAL_SPEC = ROOT / "review_agent.md"
 FEEDBACK_PROMPT = ROOT / "prompts/refine_prompt.txt"
 DATA_DIR = ROOT / "data"
-RAW_DIR = DATA_DIR / "raw"
-PLOTS_DIR = DATA_DIR / "plots"
-METRICS_FILE = DATA_DIR / "metrics.csv"
+RUNS_DIR = DATA_DIR / "runs"
 
-# Create directories
-def ensure_dirs() -> None:
-  os.makedirs(RAW_DIR, exist_ok=True)
-  os.makedirs(PLOTS_DIR, exist_ok=True)
+
+def new_run_dir() -> Path:
+    run_id = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
+    run_dir = RUNS_DIR / run_id
+    (run_dir / "raw").mkdir(parents=True, exist_ok=True)
+    (run_dir / "plots").mkdir(parents=True, exist_ok=True)
+    _update_latest_symlink(run_dir)
+    return run_dir
+
+
+def _update_latest_symlink(run_dir: Path) -> None:
+    latest = RUNS_DIR / "latest"
+    try:
+        if latest.is_symlink() or latest.exists():
+            latest.unlink()
+        latest.symlink_to(run_dir.name)
+    except OSError:
+        pass
